@@ -1,6 +1,6 @@
 // /* eslint-disable */
 import React from 'react';
-import { observable, action, reaction } from 'mobx';
+import { observable, action, reaction, decorate, computed } from 'mobx';
 import { observer } from 'mobx-react';
 import { checkPropTypes } from 'prop-types';
 
@@ -33,9 +33,13 @@ function makeRealComponentIfNecessary(fnComponent, spec, context) {
 
   // eslint-disable-next-line
   class EsComponent extends React.Component {
+
+    render() {
+      return fnComponent(this.props);
+    }
+
   }
 
-  EsComponent.prototype.render = fnComponent;
   hooks.forEach((name) => {
     if (name in spec) {
       EsComponent.prototype[hookToRealName(name)] = spec[name].bind(context);
@@ -47,8 +51,11 @@ function makeRealComponentIfNecessary(fnComponent, spec, context) {
 
 function componentFactory(spec) {
   return (props) => {
-    const context = observable.object(spec.state());
-    const fnComponent = spec.render.bind(context, props);
+    const context = observable.object(spec.state(props));
+    const fnComponent = (newProps) => {
+      context.$props = newProps;
+      return spec.render.bind(context)(newProps);
+    };
     const realComponent = makeRealComponentIfNecessary(fnComponent, spec, context);
     const Component = observer(realComponent);
 
@@ -72,6 +79,9 @@ function componentFactory(spec) {
           { get: arg.get.bind(context), set: arg.set.bind(context) };
 
       Reflect.defineProperty(context, name, property);
+      decorate(context, { name: computed });
+      // eslint-disable-next-line
+      console.debug("Decorated", name);
     });
 
     Reflect.ownKeys((spec.watch || {})).forEach((name) => {

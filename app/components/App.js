@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import img from '../assets/images/react_logo_512x512.png';
 import componentFactory from '../lib/componentFactory';
+import DemoParent from './demo-parent';
 
 const Obj = componentFactory({
   propTypes: {
@@ -36,14 +37,14 @@ const Obj = componentFactory({
       console.debug("Unfoo is now", newValue);
     }
   },
-  render(p) {
+  render() {
     return (
       <button
         data-el-id={this.$elId}
         type="button"
         onClick={this.increment}
       >
-        {this.foo} and {p.bar} and {this.unfoo}
+        {this.foo} and {this.$props.bar} and {this.unfoo}
       </button>
     );
   }
@@ -51,6 +52,7 @@ const Obj = componentFactory({
 
 const App = () => (
   <div>
+    <DemoParent />
     <Obj bar="1" />
     <Obj bar="2" />
     <Obj bar="bar3" />
