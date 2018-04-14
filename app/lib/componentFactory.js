@@ -1,6 +1,6 @@
-/* eslint-disable */
+// /* eslint-disable */
 import React from 'react';
-import { observable, action } from 'mobx';
+import { observable, action, reaction } from 'mobx';
 import { observer } from 'mobx-react';
 import { checkPropTypes } from 'prop-types';
 
@@ -21,7 +21,7 @@ function hookToRealName(hook) {
   if (hook.substr(0, 6) === 'should') {
     return hook.replace('should', 'shouldComponent');
   }
-  return 'component' + hook.charAt(0).toUpperCase() + hook.substr(1);
+  return `component${hook.charAt(0).toUpperCase()}${hook.substr(1)}`;
 }
 
 function makeRealComponentIfNecessary(fnComponent, spec, context) {
@@ -31,6 +31,7 @@ function makeRealComponentIfNecessary(fnComponent, spec, context) {
     return fnComponent;
   }
 
+  // eslint-disable-next-line
   class EsComponent extends React.Component {
   }
 
@@ -52,6 +53,7 @@ function componentFactory(spec) {
     const Component = observer(realComponent);
 
     context.$elId = uniqueElId();
+    context.$props = props;
     Reflect.defineProperty(context, '$el', {
       get() {
         return document.querySelector(`[data-el-id="${context.$elId}"]`);
@@ -72,9 +74,12 @@ function componentFactory(spec) {
       Reflect.defineProperty(context, name, property);
     });
 
-    // checkPropTypes(spec.propTypes, props, 'prop', 'Component');
+    Reflect.ownKeys((spec.watch || {})).forEach((name) => {
+      reaction(() => context[name], spec.watch[name].bind(context));
+    });
 
-    // eslint-disable-next-line
+    checkPropTypes(spec.propTypes, props, 'prop', 'Component');
+
     return new Component();
   };
 }
