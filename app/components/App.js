@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import img from '../assets/images/react_logo_512x512.png';
 import componentFactory from '../lib/componentFactory';
+import DemoParent from './demo-parent';
 
 const Obj = componentFactory({
   propTypes: {
@@ -19,7 +20,7 @@ const Obj = componentFactory({
   },
   computed: {
     unfoo() {
-      return 10 - this.foo;
+      return `${10 - this.foo}/${this.$props.bar}`;
     }
   },
   willMount() {
@@ -30,14 +31,20 @@ const Obj = componentFactory({
     // eslint-disable-next-line
     console.debug("Mounted", this.$el);
   },
-  render(p) {
+  watch: {
+    unfoo(newValue) {
+      // eslint-disable-next-line
+      console.debug("Unfoo is now", newValue);
+    }
+  },
+  render() {
     return (
       <button
         data-el-id={this.$elId}
         type="button"
         onClick={this.increment}
       >
-        {this.foo} and {p.bar} and {this.unfoo}
+        {this.foo} and {this.$props.bar} and {this.unfoo}
       </button>
     );
   }
@@ -45,6 +52,7 @@ const Obj = componentFactory({
 
 const App = () => (
   <div>
+    <DemoParent />
     <Obj bar="1" />
     <Obj bar="2" />
     <Obj bar="bar3" />

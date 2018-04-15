@@ -1,6 +1,6 @@
-/* eslint-disable */
+// /* eslint-disable */
 import React from 'react';
-import { observable, action } from 'mobx';
+import { observable, action, reaction, decorate, computed } from 'mobx';
 import { observer } from 'mobx-react';
 import { checkPropTypes } from 'prop-types';
 
@@ -21,7 +21,7 @@ function hookToRealName(hook) {
   if (hook.substr(0, 6) === 'should') {
     return hook.replace('should', 'shouldComponent');
   }
-  return 'component' + hook.charAt(0).toUpperCase() + hook.substr(1);
+  return `component${hook.charAt(0).toUpperCase()}${hook.substr(1)}`;
 }
 
 function makeRealComponentIfNecessary(fnComponent, spec, context) {
@@ -31,10 +31,15 @@ function makeRealComponentIfNecessary(fnComponent, spec, context) {
     return fnComponent;
   }
 
+  // eslint-disable-next-line
   class EsComponent extends React.Component {
+
+    render() {
+      return fnComponent(this.props);
+    }
+
   }
 
-  EsComponent.prototype.render = fnComponent;
   hooks.forEach((name) => {
     if (name in spec) {
       EsComponent.prototype[hookToRealName(name)] = spec[name].bind(context);
@@ -46,12 +51,16 @@ function makeRealComponentIfNecessary(fnComponent, spec, context) {
 
 function componentFactory(spec) {
   return (props) => {
-    const context = observable.object(spec.state());
-    const fnComponent = spec.render.bind(context, props);
+    const context = observable.object(spec.state(props));
+    const fnComponent = (newProps) => {
+      context.$props = newProps;
+      return spec.render.bind(context)(newProps);
+    };
     const realComponent = makeRealComponentIfNecessary(fnComponent, spec, context);
     const Component = observer(realComponent);
 
     context.$elId = uniqueElId();
+    context.$props = props;
     Reflect.defineProperty(context, '$el', {
       get() {
         return document.querySelector(`[data-el-id="${context.$elId}"]`);
@@ -70,11 +79,17 @@ function componentFactory(spec) {
           { get: arg.get.bind(context), set: arg.set.bind(context) };
 
       Reflect.defineProperty(context, name, property);
+      decorate(context, { name: computed });
+      // eslint-disable-next-line
+      console.debug("Decorated", name);
     });
 
-    // checkPropTypes(spec.propTypes, props, 'prop', 'Component');
+    Reflect.ownKeys((spec.watch || {})).forEach((name) => {
+      reaction(() => context[name], spec.watch[name].bind(context));
+    });
 
-    // eslint-disable-next-line
+    checkPropTypes(spec.propTypes, props, 'prop', 'Component');
+
     return new Component();
   };
 }
