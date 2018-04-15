@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import componentFactory from '../lib/componentFactory';
 import LiveUpdater from './live-updater';
 import DelayedUpdater from './delayed-updater';
+import SeparateState from './separate-state';
 
 function FnUpdater(props) {
   return (
@@ -40,6 +41,7 @@ const DemoParent = componentFactory({
         <LiveUpdater value={this.value} onChange={this.updateValue} />
         <DelayedUpdater value={this.value} onChange={this.updateValue} />
         <FnUpdater value={this.value} onChange={this.updateValueFromEvent} />
+        <SeparateState value={this.value} onChange={this.updateValueFromEvent} />
       </div>
     );
   }
