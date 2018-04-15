@@ -80,8 +80,6 @@ function componentFactory(spec) {
 
       Reflect.defineProperty(context, name, property);
       decorate(context, { name: computed });
-      // eslint-disable-next-line
-      console.debug("Decorated", name);
     });
 
     Reflect.ownKeys((spec.watch || {})).forEach((name) => {
