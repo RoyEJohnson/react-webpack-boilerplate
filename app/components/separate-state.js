@@ -1,7 +1,6 @@
-/* eslint-disable */
 import React from 'react';
 import PropTypes from 'prop-types';
-import { observable, action, reaction, decorate, computed } from 'mobx';
+import { observable, action } from 'mobx';
 import { observer } from 'mobx-react';
 
 function render(props) {
@@ -24,20 +23,33 @@ render.propTypes = {
   msg: PropTypes.string.isRequired
 };
 
-const state = observable({
-  localValue: 'State value'
-});
-
-const Component = observer((props) => {
-  console.debug("Got props:", props);
-  const stateAsProps = {
-    onChange() { console.debug("On change!"); },
+const fnThatReturnsComponent = (initialProps) => {
+  const state = observable({
+    localValue: initialProps.value,
     updatesSent: 0,
-    localValue: state.localValue,
-    sendUpdate() { console.debug("Send update!"); },
-    msg: 'The messagge'
-  };
-  return render(stateAsProps);
-});
+    onChange: action((event) => {
+      state.localValue = event.target.value;
+    }),
+    sendUpdate: action(() => {
+      state.updatesSent += 1;
+      initialProps.onChange(state.localValue);
+    })
+  });
+  // eslint-disable-next-line
+  const Component = observer((props) => {
+    // Any props that get passed on would happen here, too
+    return render(Object.assign({}, state));
+  });
+  let lastProps = initialProps;
 
-export default Component;
+  Component.prototype.componentWillReceiveProps = (nextProps) => {
+    if (nextProps.value !== lastProps.value) {
+      state.localValue = nextProps.value;
+    }
+    lastProps = nextProps;
+  };
+
+  return new Component();
+};
+
+export default fnThatReturnsComponent;

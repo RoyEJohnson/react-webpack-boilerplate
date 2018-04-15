@@ -41,7 +41,7 @@ const DemoParent = componentFactory({
         <LiveUpdater value={this.value} onChange={this.updateValue} />
         <DelayedUpdater value={this.value} onChange={this.updateValue} />
         <FnUpdater value={this.value} onChange={this.updateValueFromEvent} />
-        <SeparateState value={this.value} onChange={this.updateValueFromEvent} />
+        <SeparateState value={this.value} onChange={this.updateValue} />
       </div>
     );
   }

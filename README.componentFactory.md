@@ -73,11 +73,6 @@ shouldUpdate
 They are declared at the top level, not inside `actions`, but are otherwise like
 actions in terms of being bound to state and accessing state members and props.
 
-Note: if lifecycle hooks are not used, the factory will make a functional
-component, which is somewhat lighter weight than a class-based component. It's
-not stateless, as functional components are, because its state is handled
-separately.
-
 ### `render`
 
 This is the familiar `render` function. It receives `props` as its argument,
@@ -88,10 +83,7 @@ the spec.
 
 ## Refs and `$el`
 
-Refs are not currently supported. Since all actions, etc. are bound to the
-state object, and not to the React class (if any) implementing the view, even if
-you include a `ref` in your `render` function, you would have no access to it
-from the programming side.
+Refs work as documented [here](https://reactjs.org/docs/refs-and-the-dom.html#adding-a-ref-to-a-dom-element).
 
 For access to the associated DOM element, you can use `this.$el` *if* you have
 attached `data-el-id={this.$elId}` to the root node of your component. You can

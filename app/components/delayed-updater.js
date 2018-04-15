@@ -10,6 +10,7 @@ const DelayedUpdater = componentFactory({
   state(props) {
     return {
       localValue: props.value,
+      previousValue: props.value,
       updatesSent: 0
     };
   },
@@ -34,7 +35,10 @@ const DelayedUpdater = componentFactory({
     }
   },
   willReceiveProps(newValue) {
-    this.localValue = newValue.value;
+    if (newValue.value !== this.previousValue) {
+      this.localValue = newValue.value;
+      this.previousValue = newValue.value;
+    }
   },
   render() {
     const updateLocal = (event) => {

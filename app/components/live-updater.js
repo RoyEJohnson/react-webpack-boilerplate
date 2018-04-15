@@ -9,13 +9,17 @@ const LiveUpdater = componentFactory({
   },
   state() {
     return {
-      updatesSent: 0
+      updatesSent: 0,
+      textInput: React.createRef()
     };
   },
   actions: {
     sendUpdate(event) {
       this.$props.onChange(event.target.value);
       this.updatesSent += 1;
+    },
+    focusTextInput() {
+      this.textInput.current.focus();
     }
   },
   render(p) {
@@ -23,7 +27,13 @@ const LiveUpdater = componentFactory({
       <div>
         <h2>Live updater</h2>
         <div>Updates sent: {this.updatesSent}</div>
-        Value: <input value={p.value} onChange={this.sendUpdate} />
+        Value:
+        <input
+          value={p.value}
+          onChange={this.sendUpdate}
+          onClick={this.focusTextInput}
+        />
+        <input type="text" ref={this.textInput} />
       </div>
     );
   }

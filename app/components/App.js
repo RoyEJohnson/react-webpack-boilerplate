@@ -23,14 +23,14 @@ const Obj = componentFactory({
       return `${10 - this.foo}/${this.$props.bar}`;
     }
   },
-  willMount() {
-    // eslint-disable-next-line
-    console.debug("Mounting");
-  },
-  didMount() {
-    // eslint-disable-next-line
-    console.debug("Mounted", this.$el);
-  },
+  // willMount() {
+  //   // eslint-disable-next-line
+  //   console.debug("Mounting");
+  // },
+  // didMount() {
+  //   // eslint-disable-next-line
+  //   console.debug("Mounted", this.$el);
+  // },
   watch: {
     unfoo(newValue) {
       // eslint-disable-next-line

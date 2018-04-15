@@ -1,5 +1,4 @@
 // /* eslint-disable */
-import React from 'react';
 import { observable, action, reaction, decorate, computed } from 'mobx';
 import { observer } from 'mobx-react';
 import { checkPropTypes } from 'prop-types';
@@ -24,41 +23,21 @@ function hookToRealName(hook) {
   return `component${hook.charAt(0).toUpperCase()}${hook.substr(1)}`;
 }
 
-function makeRealComponentIfNecessary(fnComponent, spec, context) {
-  const hasHooks = hooks.some((h) => h in spec);
-
-  if (!hasHooks) {
-    return fnComponent;
-  }
-
-  // eslint-disable-next-line
-  class EsComponent extends React.Component {
-
-    render() {
-      return fnComponent(this.props);
-    }
-
-  }
-
-  hooks.forEach((name) => {
-    if (name in spec) {
-      EsComponent.prototype[hookToRealName(name)] = spec[name].bind(context);
-    }
-  });
-
-  return EsComponent;
-}
-
 function componentFactory(spec) {
   return (props) => {
+    // eslint-disable-next-line
     const context = observable.object(spec.state(props));
     const fnComponent = (newProps) => {
       context.$props = newProps;
       return spec.render.bind(context)(newProps);
     };
-    const realComponent = makeRealComponentIfNecessary(fnComponent, spec, context);
-    const Component = observer(realComponent);
+    const Component = observer(fnComponent);
 
+    hooks.forEach((name) => {
+      if (name in spec) {
+        Component.prototype[hookToRealName(name)] = spec[name].bind(context);
+      }
+    });
     context.$elId = uniqueElId();
     context.$props = props;
     Reflect.defineProperty(context, '$el', {
